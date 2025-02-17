@@ -1,0 +1,22 @@
+Experiment,Objective,Hidden Layers & Nodes,Activation,Dropout,BatchNorm,Optimizer,Noise Augementation,Weight Clipping,Batch Size,Learning Rate,Max Epochs,Patience,avg_best_val_acc,test_acc
+Baseline Model,Reference for comparison,1 Hidden Layer (64),ReLU,None,None,Adam,No,No,64,0.0005,50,7,83.6,78.7
+Exp 2.1,Increase depth,"2 Hidden (64,32)",ReLU,None,None,Adam,No,No,64,0.0005,50,7,81.22,77.2
+Exp 2.2,Increase depth,"3 Hidden (128,64,32)",ReLU,None,None,Adam,No,No,64,0.0005,50,7,81.35,77.1
+Exp 2.3,Increase depth,"4 Hidden (256,128,64,32)",ReLU,None,None,Adam,No,No,64,0.0005,50,7,81.72,76.3
+Exp 3.1,Increase nodes by 1.5x,4 Hidden ,ReLU,None,None,Adam,No,No,64,0.0005,50,7,82.85,77.5
+Exp 3.2,Increase nodes by 2x,4 Hidden ,ReLU,None,None,Adam,No,No,64,0.0005,50,7,81.22,76.8
+Exp 3.3,Decrease nodes by 0.5x,4 Hidden ,ReLU,None,None,Adam,No,No,64,0.0005,50,7,78.97,75.2
+Exp 4.1,Add dropout (0.2),4 hidden,ReLU,0.2,None,Adam,No,No,64,0.0005,50,7,82.97,76.4
+Exp 4.2,Add dropout (0.4),4 hidden,ReLU,0.4,None,Adam,No,No,64,0.0005,50,7,83.1,78.4
+Exp 4.3,Add dropout (0.5),4 hidden,ReLU,0.5,None,Adam,No,No,64,0.0005,50,7,83.47,77.6
+Exp 4.4,Depth + Dropout(0.5),"3 Hidden (128,64,32)",ReLU,0.3,None,Adam,No,No,64,0.0005,50,7,82.73,78.5
+Exp 6.1,Replace ReLU with LeakyReLU,"4 Hidden (256,128,64,32)",LeakyReLU,None,None,Adam,No,No,64,0.0005,50,7,81.85,76.6
+Exp 6.2,Replace ReLU with ELU,"4 Hidden (256,128,64,32)",ELU,None,None,Adam,No,No,64,0.0005,50,7,83.72,77.2
+Exp 6.3,Replace ReLU with Swish,"4 Hidden (256,128,64,32)",Swish,None,None,Adam,No,No,64,0.0005,50,7,81.22,75.5
+Exp 7.1,Add BatchNorm,"4 Hidden (256,128,64,32)",ReLU,None,Yes,Adam,No,No,64,0.0005,50,7,83.6,79.7
+Exp 7.2,BatchNorm + Dropout(0.3),"4 Hidden (256,128,64,32)",ReLU,0.3,Yes,Adam,No,No,64,0.0005,50,7,85.1,78.7
+Exp 8.1,BatchNorm + Dropout + Penultimate layer embeddings,"4 Hidden (256,128,64,32)",ReLU,0.3,Yes,Adam,No,No,64,0.0005,50,7,67.08,66.8
+Exp 9.1,BatchNorm + Dropout ,"4 Hidden (256,128,64,32)",ReLU,0.3,Yes,Adam,Yes (once at the beginning of training) noise factor = 0.1,No,64,0.0005,50,7,95.68,93.35
+Exp 9.2,BatchNorm + Dropout ,"4 Hidden (256,128,64,32)",ReLU,0.3,Yes,Adam,Yes (at the beginning of each epoch) noise factor = 0.1,No,64,0.0005,50,7,85.6,80.59
+Exp 9.3,BatchNorm + Dropout ,"4 Hidden (256,128,64,32)",ReLU,0.3,Yes,Adam,No,Yes (clip_value=0.5),64,0.0005,50,7,85.1,80.39
+Exp 9.4,BatchNorm + Dropout ,"4 Hidden (256,128,64,32)",ReLU,0.3,Yes,Adam,Yes (once at the beginning of training) noise factor = 0.1,No,64,0.0005,35,5,95.74,93.6

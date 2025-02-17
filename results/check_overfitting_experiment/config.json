@@ -1,0 +1,9 @@
+{
+    "batch_size": 64,
+    "learning_rate": 0.0005,
+    "max_epochs": 50,
+    "patience": 7,
+    "num_classes": 10,
+    "experiment_name": "check_overfitting_experiment",
+    "input_dim": 3072
+}
