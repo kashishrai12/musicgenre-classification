@@ -60,13 +60,13 @@ def main():
     set_seed(42)  # Set a fixed random seed for reproducibility
 
     # Load training data
-    train_data_path = r"D:\research_project\dataset2\byola_features_train.npz"
+    train_data_path = r"D:\research_project\preprocessed_fma\byola_features_train.npz"
     train_data = np.load(train_data_path)
     train_features = train_data['features']
     train_filenames = train_data['filenames']
     
     # Load test data
-    test_data_path = r"D:\research_project\dataset2\byola_features_test.npz"
+    test_data_path = r"D:\research_project\preprocessed_fma\byola_features_test.npz"
     test_data = np.load(test_data_path)
     test_features = test_data['features']
     test_filenames = test_data['filenames']

@@ -128,8 +128,8 @@ def main():
         # Extract and save features for train and test splits
         train_csv = r"D:\research_project\dataset2\train_split.csv"
         test_csv = r"D:\research_project\dataset2\test_split.csv"
-        train_output_npz = r"D:\research_project\dataset2\byola_features_train.npz"
-        test_output_npz = r"D:\research_project\dataset2\byola_features_test.npz"
+        train_output_npz = r"D:\research_project\preprocessed_fma\byola_features_train.npz"
+        test_output_npz = r"D:\research_project\preprocessed_fma\byola_features_test.npz"
         
         extract_and_save_features(train_csv, preprocessed_dir, train_output_npz, model, to_melspec, device)
         extract_and_save_features(test_csv, preprocessed_dir, test_output_npz, model, to_melspec, device)

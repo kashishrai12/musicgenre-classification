@@ -45,7 +45,7 @@ def map_embeddings_to_labels(embeddings_file, tracks_csv):
     return features, labels
 
 if __name__ == "__main__":
-    embeddings_file = r'D:\research_project\dataset2\byola_features_train.npz'
+    embeddings_file = r'D:\research_project\preprocessed_fma\byola_features_train.npz'
     tracks_csv = r'D:\research_project\dataset2\tracks.csv'
     features, labels = map_embeddings_to_labels(embeddings_file, tracks_csv)
     print(f"Features shape: {features.shape}")
