@@ -1,7 +1,11 @@
-from base_training import run_training, save_results, set_seed
+from base_training2 import run_training, evaluate_model, save_results, set_seed
 import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import StratifiedKFold
+import csv
 
 class NoiseAugmentationModel(nn.Module):
     def __init__(self, input_dim, num_classes):
@@ -25,9 +29,18 @@ class NoiseAugmentationModel(nn.Module):
             nn.Dropout(0.3),
             nn.Linear(32, num_classes)
         )
-        
+    
     def forward(self, x):
         return self.layers(x)
+
+def plot_confusion_matrix(y_true, y_pred, genre_names):
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=genre_names, yticklabels=genre_names)
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.title('Confusion Matrix')
+    plt.show()
 
 def add_noise(data, noise_factor=0.1):
     noise = np.random.normal(0, noise_factor, data.shape)
@@ -35,31 +48,64 @@ def add_noise(data, noise_factor=0.1):
 
 def main():
     set_seed(42)  # Set a fixed random seed for reproducibility
-    data_path = r"D:\research_project\preprocessed\byola_features.npz"
-    data = np.load(data_path)
-    features = data['features']
-    labels = data['labels']
-    genre_names = data['genres']  # Assuming genres are stored in the npz file
+    
+    # Load training data
+    train_data = np.load(r"D:\research_project\preprocessed\extracted_train.npz")
+    train_features = train_data['X']
+    train_labels = train_data['y']
+    genre_names = train_data['genres']  # Assuming genres are stored in the npz file
+    
+    # Load testing data
+    test_data = np.load(r"D:\research_project\preprocessed\extracted_test.npz")
+    test_features = test_data['X']
+    test_labels = test_data['y']
     
     # Add noise to a subset of the training data
     noise_factor = 0.1
-    noisy_features = add_noise(features, noise_factor)
-    augmented_features = np.concatenate((features, noisy_features), axis=0)
-    augmented_labels = np.concatenate((labels, labels), axis=0)
+    noisy_features = add_noise(train_features, noise_factor)
+    augmented_features = np.concatenate((train_features, noisy_features), axis=0)
+    augmented_labels = np.concatenate((train_labels, train_labels), axis=0)
     
     config = {
         'batch_size': 64,
         'learning_rate': 0.0005,
         'max_epochs': 35,  # Set max_epochs to 35
         'patience': 5,  # Set patience to 5
-        'num_classes': len(np.unique(labels)),
+        'num_classes': len(np.unique(train_labels)),
         'experiment_name': 'exp_noise_augmentation_once',
         'weight_decay': 0.0
     }
     
     experiment_name = config['experiment_name']
-    fold_results = run_training(augmented_features, augmented_labels, config, NoiseAugmentationModel, experiment_name, genre_names)
-    save_results(experiment_name, fold_results, config, genre_names)
+    
+    # Perform cross-validation
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    fold_results = []
+    
+    for fold, (train_idx, val_idx) in enumerate(skf.split(augmented_features, augmented_labels)):
+        print(f"\nFold {fold + 1}/5")
+        X_train, X_val = augmented_features[train_idx], augmented_features[val_idx]
+        y_train, y_val = augmented_labels[train_idx], augmented_labels[val_idx]
+        
+        fold_result = run_training(X_train, y_train, X_val, y_val, config, NoiseAugmentationModel, experiment_name, genre_names)
+        fold_results.append(fold_result)
+    
+    # Calculate average metrics
+    avg_best_val_acc = np.mean([max(result['val_accuracies']) for result in fold_results]) * 100
+    avg_train_losses = np.mean([np.mean(result['train_losses']) for result in fold_results])
+    avg_val_losses = np.mean([np.mean(result['val_losses']) for result in fold_results])
+    
+    # Evaluate on test set
+    test_result = evaluate_model(train_features, train_labels, test_features, test_labels, config, NoiseAugmentationModel, genre_names)
+    avg_test_acc = test_result['test_accuracy']
+    
+    # Save results
+    with open(r"D:\research_project\average_experiment_results.csv", 'a', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow([experiment_name, avg_best_val_acc, avg_train_losses, avg_val_losses, avg_test_acc])
+    
+    # Plot confusion matrix for the test set
+    plot_confusion_matrix(test_result['y_true'], test_result['y_pred'], genre_names)
 
 if __name__ == "__main__":
     main()

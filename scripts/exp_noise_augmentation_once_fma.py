@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 import pandas as pd
 from collections import Counter
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset, Subset
 from sklearn.model_selection import StratifiedKFold
 from map_embeddings_to_labels import load_genre_labels  # Import the function
+import seaborn as sns
 
 class NoiseAugmentationModel(nn.Module):
     def __init__(self, input_dim, num_classes):
@@ -55,6 +56,15 @@ def evaluate_model(model, test_loader, device):
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
     return all_labels, all_preds
+
+def plot_confusion_matrix(y_true, y_pred, genre_names):
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=genre_names, yticklabels=genre_names)
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.title('Confusion Matrix')
+    plt.show()
 
 def main():
     set_seed(42)  # Set a fixed random seed for reproducibility
@@ -198,6 +208,9 @@ def main():
     else:
         results_df.to_csv(results_csv_path, index=False)
     print(f"Results saved to {results_csv_path}")
+
+    # Plot confusion matrix for the test set
+    plot_confusion_matrix(y_true_test, y_pred_test, label_encoder.classes_)
 
 if __name__ == "__main__":
     main()
