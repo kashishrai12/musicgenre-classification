@@ -80,4 +80,8 @@ results/*.npz
 
 # Allow chunked files
 !preprocessed/chunks/
-!preprocessed/chunks/train.npz.part_* 
+!preprocessed/chunks/train.npz.part_* /dataset/ 
+/dataset2/ 
+/preprocessed_panns_gtzan/ 
+/preprocessed_vggish_fma/ 
+/preprocessed_vggish_gtzan/ 
