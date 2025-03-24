@@ -70,7 +70,7 @@ def main():
         'batch_size': 64,
         'learning_rate': 0.0005,
         'max_epochs': 35,  # Set max_epochs to 35
-        'patience': 5,  # Set patience to 5
+        'patience': 7,  # Set patience to 5
         'num_classes': len(np.unique(train_labels)),
         'experiment_name': 'exp_noise_augmentation_once',
         'weight_decay': 0.0
