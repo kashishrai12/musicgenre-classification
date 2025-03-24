@@ -107,7 +107,7 @@ This project focuses on classifying music genres based on audio features extract
 
 | Experiment | Objective                          | Hidden Layers & Nodes          | Activation | Dropout | BatchNorm | Optimizer | Noise Augmentation                                      | Weight Clipping   | Batch Size | Learning Rate | Max Epochs | Patience | Avg Best Val Acc | Avg Train Loss | Avg Val Loss | Avg Test Acc |
 |------------|-----------------------------------|--------------------------------|------------|---------|-----------|-----------|-------------------------------------------------------|------------------|-----------|-------------|-----------|---------|----------------|--------------|--------------|-------------|
-| Exp 1.1   | Baseline Model                    | 1 Hidden (64)                  | ReLU       | None    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 83.61          | 0.129        | 0.756        | 78.7         |
+| Exp 1.1   | Baseline Model                    | 1 Hidden (64)                  | ReLU       | None    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 83.35          | 0.146        | 0.736        | 78         |
 | Exp 2.1   | Increase depth                    | 2 Hidden (64,32)               | ReLU       | None    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 81.23          | 0.373        | 0.769        | 77           |
 | Exp 2.2   | Increase depth                    | 3 Hidden (128,64,32)           | ReLU       | None    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 81.60          | 0.458        | 0.871        | 78.5         |
 | Exp 2.3   | Increase depth                    | 4 Hidden (256,128,64,32)       | ReLU       | None    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 81.10          | 0.566        | 1.048        | 76.5         |
@@ -117,7 +117,6 @@ This project focuses on classifying music genres based on audio features extract
 | Exp 4.1   | Add dropout(0.2)                    | 4 Hidden        | ReLU       | 0.2    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 82.35        | 0.756        | 1.033       | 77.5         |
 | Exp 4.2   | Add dropout(0.4)            | 4 Hidden        | ReLU       | 0.4    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 82.60          | 0.99       | 1.081      | 79         |
 | Exp 4.3   | Add dropout(0.5)                    | 4 Hidden        | ReLU       | 0.5    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 80.72          | 1.203       | 1.187        | 79        |
-| Exp 4.4   | Depth + Dropout(0.3)           | 3 Hidden (128,64,32)       | ReLU       | 0.3    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 80.97          | 0.561        | 1.045        | 75         |
 | Exp 5.1   | Replace ReLU with LeakyReLU       | 4 Hidden (256,128,64,32)       | LeakyReLU  | None    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 82.48          | 0.439        | 0.885        | 76.5         |
 | Exp 5.2   | Replace ReLU with ELU             | 4 Hidden (256,128,64,32)       | ELU        | None    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 81.85          | 0.535        | 1.019        | 78           |
 | Exp 5.3   | Replace ReLU with Swish           | 4 Hidden (256,128,64,32)       | Swish      | None    | None      | Adam      | No                                                    | No               | 64        | 0.0005       | 50        | 7       | 85.48          | 0.371        | 0.886        | 82.5         |
@@ -152,7 +151,12 @@ This project focuses on classifying music genres based on audio features extract
 | Exp 1.1   | BatchNorm + Dropout  | 4 Hidden (256,128,64,32)       | ReLU       | 0.3     | Yes       | Adam      | Yes (once at the beginning) | No         | 64        | 0.0005       | 35        | 5       | 98.22          | 0.386        | 0.900        | 58.04       |
 
 ---
+## Dataset: GTZAN  
+**Feature Extraction using: PANNS**
 
+| Experiment | Objective             | Hidden Layers & Nodes          | Activation | Dropout | BatchNorm | Optimizer | Noise Augmentation | Weight Clipping | Batch Size | Learning Rate | Max Epochs | Patience | Avg Best Val Acc | Avg Train Loss | Avg Val Loss | Avg Test Acc |
+|------------|----------------------|--------------------------------|------------|---------|-----------|-----------|-------------------|----------------|-----------|-------------|-----------|---------|----------------|--------------|--------------|-------------|
+| Exp 1.1   | BatchNorm + Dropout  | 4 Hidden (256,128,64,32)       | ReLU       | 0.3     | Yes       | Adam      | Yes (once at the beginning) | No         | 64        | 0.0005       | 35        | 5       | 74.62          | 0.938        | 1.212        | 77        |
 
 
 
