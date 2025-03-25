@@ -62,7 +62,7 @@ This project focuses on classifying music genres based on audio features extract
 │ ├── preprocess-fma-small.py # Preprocesses FMA-Small dataset
 │ ├── extract-embeddings-fma.py # Extracts BYOLA embeddings for FMA-Small
 │ ├── map-embeddings-to-labels.py # Maps BYOLA embeddings to genre labels (FMA)
-│ ├── exp1 to 7_1.py # Experiments 1 to 7_1 (GTZAN)
+│ ├── exp1 to 8.4.py # Experiments 1 to 8.4 (GTZAN)
 │ ├── exp-noise-augmentation-epoch.py # Noise augmentation per epoch (GTZAN)
 │ ├── exp-noise-augmentation-once.py # Noise augmentation once (GTZAN)
 │ ├── exp-weight-clipping.py # Weight clipping experiment (GTZAN)
