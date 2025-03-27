@@ -1,0 +1,43 @@
+Level,Group,Accuracy
+Group,All,0.785
+Genre,0,0.8625
+Genre,1,1.0
+Genre,2,0.81
+
+
+Applying K-Means Clustering with K=3...
+K = 3, Silhouette Score: 0.1294
+
+Cluster Percentages for K = 3:
+Genre  Genre  Cluster
+0      0      0          33.750000
+              1           7.500000
+              2          58.750000
+1      1      0           2.500000
+              1          97.500000
+2      2      0          30.000000
+              1           5.000000
+              2          65.000000
+3      3      0          71.250000
+              1           1.250000
+              2          27.500000
+4      4      0          27.500000
+              2          72.500000
+5      5      0          18.987342
+              1          68.354430
+              2          12.658228
+6      6      0          95.000000
+              2           5.000000
+7      7      0          33.750000
+              1           2.500000
+              2          63.750000
+8      8      0          35.000000
+              2          65.000000
+9      9      0          63.750000
+              1           3.750000
+              2          32.500000
+dtype: float64
+
+Designing Hierarchical Classification System...
+Genre to Group Mapping:
+{0: 0, 1: 1, 2: 0, 3: 2, 4: 2, 5: 2, 6: 0, 7: 0, 8: 2, 9: 2}

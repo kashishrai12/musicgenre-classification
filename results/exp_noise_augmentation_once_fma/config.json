@@ -1,9 +1,0 @@
-{
-    "batch_size": 64,
-    "learning_rate": 0.0005,
-    "max_epochs": 35,
-    "patience": 5,
-    "num_classes": 8,
-    "experiment_name": "exp_noise_augmentation_once_fma",
-    "weight_decay": 0.0
-}

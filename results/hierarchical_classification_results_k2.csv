@@ -1,0 +1,13 @@
+Level,Group,Accuracy
+Group,All,0.995
+Genre,0,0.69375
+Genre,1,0.95
+
+
+    K = 2, Silhouette Score: 0.1758
+    K = 3, Silhouette Score: 0.1294
+    K = 4, Silhouette Score: 0.1289
+    K = 5, Silhouette Score: 0.1308
+
+    Genre to Group Mapping:
+    {0: 0, 1: 1, 2: 0, 3: 0, 4: 0, 5: 1, 6: 0, 7: 0, 8: 0, 9: 0}
