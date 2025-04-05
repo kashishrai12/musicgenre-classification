@@ -238,6 +238,15 @@ This project focuses on classifying music genres based on audio features extract
 | 8      | 0.287500 | 0.025000 | 0.000000 | 0.687500 |
 | 9      | 0.612500 | 0.037500 | 0.037500 | 0.312500 |
 
+## Results
+
+| Group | Accuracy | Samples |
+|-------|----------|---------|
+| 0     | 0.1333   | 60      |
+| 1     | 0.1500   | 20      |
+| 2     | 0.9500   | 20      |
+| 3     | 0.8300   | 100     |
+| **Average** | **0.5158** | - |
 
 
 
