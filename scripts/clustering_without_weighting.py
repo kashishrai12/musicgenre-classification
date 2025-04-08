@@ -9,7 +9,7 @@ import csv
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import KFold
-
+from sklearn.metrics import confusion_matrix
 class NoiseAugmentationModel(nn.Module):
     def __init__(self, input_dim, num_classes):
         super().__init__()
