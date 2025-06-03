@@ -295,7 +295,124 @@ This project focuses on classifying music genres based on audio features extract
 | 9      | 0.575000 | 0.025000 | 0.212500 | 0.150000 | 0.037500 |
 
 
+## Dataset: GTZAN  
+**Feature Extraction using: BYOLA**  
+**Using Contrastive Loss and Fine-tuning with Cross-Entrpoy Loss** 
+
+  
+
+| Embedding Layer Frozen    | LR (Embedding Layers)  | LR (Classification Head)| Accuracy                  |
+|---------------------------|------------------------|-------------------------|---------------------------|
+| No                        | 1e-4                   | 1e-4                    | 78.4%                     |
+| No                        | 1e-3                   | 1e-4                    | 79%                       |
+| No                        | 1e-4                   | 1e-3                    | 72.5%                     |
+| Yes                       | 1e-4                   | 1e-4                    | 55 %                      |
 
 
 
+**Using Triplet Loss and Fine-tuning with Cross-Entrpoy Loss** 
+
+**Using 1 positive and 1 negative sample selected randomnly for each anchor:**  
+
+| Embedding Layer Frozen    | LR (Embedding Layers)  | LR (Classification Head)| Accuracy                  |
+|---------------------------|------------------------|-------------------------|---------------------------|
+| No                        | 1e-3                   | 1e-4                    | 71.5%                     |
+| No                        | 1e-4                   | 1e-4                    | 70.5%                     |
+| No                        | 1e-5                   | 1e-4                    | 72%                       |
+| Yes                       | 1e-3                   | 1e-3                    | 76.5 %                    |
+
+ 
+
+**Varying the No. of positive and negative samples selected randomnly for each anchor:**  
+**LR(Both) = 1e-4:**  
+
+| Embedding Layer Frozen | No.of samples (pos and neg) | Accuracy |
+|------------------------|-----------------------------|----------|
+| No                     | 1                           | 72%      |
+| No                     | 2                           | 74%      |
+| No                     | 3                           |  76%     |
+| No                     | 4                           | 77.5 %   |
+| No                     | 5                           | 78.5%    |
+| No                     | 6                           | 78.5%    |
+| No                     | 7                           |  76.5%   |
+| No                     | 8                           | 79.5 %   |
+| No                     | 9                           | 80.5%    |
+| No                     | 10                          | 79.5%    |
+| No                     | 12                          |  81.5%   |
+| No                     | 14                          | 81.5 %   |
+| No                     | 18                          | 80.5%    |
+| No                     | 20                          | 79%      |
+
+**Multitask training with Two output heads (using Contrastive Loss):**  
+**alpha = weight of Contrastive loss**  
+
+| Loss Function          | alpha                       | Accuracy |
+|------------------------|-----------------------------|----------|
+| Contrastive Loss       | 0.5                         | 79%      |
+
+**Multitask training with 2 output heads (using Triplet Loss):**  
+**alpha = weight of Triplet loss** 
+
+| Loss Function          | alpha                       | Accuracy |
+|------------------------|-----------------------------|----------|
+| Triplet Loss           | 0.5                         | 77%      |
+
+
+**Multitask training with 3 output heads (using Contrastive Loss):**  
+**alpha = weight of Contrastive loss:** 
+**W1 (weight of Classification_Head1) : 0.5** 
+
+
+| Loss Function          | alpha                       | Accuracy |
+|------------------------|-----------------------------|----------|
+| Contrastive Loss       | 0.1                         | 80%      |
+| Contrastive Loss       | 0.2                         | 79.5%    |
+| Contrastive Loss       | 0.3                         | 81.5%    |
+| Contrastive Loss       | 0.4                         | 77.5%    |
+| Contrastive Loss       | 0.5                         | 81%      |
+| Contrastive Loss       | 0.6                         | 78.5%    |
+| Contrastive Loss       | 0.7                         | 79.5%    |
+| Contrastive Loss       | 0.8                         | 78%      |
+| Contrastive Loss       | 0.9                         | 77.5%    |
+
+
+**Multitask training with 3 output heads (using Contrastive Loss):**  
+**alpha (weight of Contrastive loss) : 0.3** 
+**W1 (weight of Classification_Head1)** 
+
+
+| Loss Function          | W1                          | Accuracy |
+|------------------------|-----------------------------|----------|
+| Contrastive Loss       | 0.1                         | 80%      |
+| Contrastive Loss       | 0.3                         | 79.5%    |
+| Contrastive Loss       | 0.5                         | 79%      |
+| Contrastive Loss       | 0.7                         | 78.5%    |
+| Contrastive Loss       | 0.9                         | 81%      |
+
+**Multitask training with 3 output heads (using Triplet Loss):**  
+**alpha (weight of Triplet loss) : 0.3** 
+**W1 (weight of Classification_Head1) : 0.5** 
+
+
+| Loss Function          | W1                          | Accuracy |
+|------------------------|-----------------------------|----------|
+| Triplet Loss           | 0.5                         | 80%      |
+
+
+**Multitask training with 4 output heads (using Triplet Loss):**  
+**alpha (weight of Triplet loss) : 0.3** 
+**W1 (weight of Classification_Head1) : 1/3** 
+**W2 (weight of Classification_Head1) : 1/3** 
+
+
+| Loss Function          | alpla                          | Accuracy |
+|------------------------|-----------------------------   |----------|
+| Triplet Loss           | 0.3                            | 79.5%    |
+
+## Dataset: GTZAN + FMA (small) combined 
+**Feature Extraction using: BYOLA**  
+
+| Experiment | Objective             | Hidden Layers & Nodes          | Activation | Dropout | BatchNorm | Optimizer | Noise Augmentation | Weight Clipping | Batch Size | Learning Rate | Max Epochs | Patience | Test Acc (GTZAN) | Test Acc (FMA) | Test Acc (GTZAN+FMA) | 
+|------------|----------------------|--------------------------------|------------|---------|-----------|-----------|-------------------|----------------|-----------|-------------|-----------|---------|----------------|----------------|----------------|
+| Exp 1.1   | BatchNorm + Dropout  | 4 Hidden (256,128,64,32)       | ReLU       | 0.3     | Yes       | Adam      | Yes (once at the beginning) | No         | 64        | 0.0005       | 35        | 5       | 78          | 64.25          | 65.78          |    
 
