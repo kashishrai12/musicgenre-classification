@@ -5,11 +5,11 @@ from sklearn.preprocessing import LabelEncoder
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import csv
+from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.model_selection import KFold
-from sklearn.metrics import confusion_matrix
+import csv
+
 class NoiseAugmentationModel(nn.Module):
     def __init__(self, input_dim, num_classes):
         super().__init__()
@@ -43,7 +43,6 @@ def save_label_mapping(label_encoder, cluster_to_genre, output_path):
         for cluster_idx, genre_probs in enumerate(cluster_to_genre):
             for genre_idx, prob in enumerate(genre_probs):
                 writer.writerow([cluster_idx, label_encoder.inverse_transform([genre_idx])[0], prob])
-    print(f"Label mapping saved to {output_path}")
 
 def plot_and_save_confusion_matrix(y_true, y_pred, genre_names, output_path):
     cm = pd.crosstab(pd.Series(y_true, name='Actual'), pd.Series(y_pred, name='Predicted'))
@@ -57,7 +56,6 @@ def plot_and_save_confusion_matrix(y_true, y_pred, genre_names, output_path):
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
-    print(f"Confusion matrix saved to {output_path}")
 
 def main():
     torch.manual_seed(42)
@@ -78,6 +76,7 @@ def main():
     y_test_encoded = label_encoder.transform(y_test)
     genre_names = label_encoder.classes_
     num_genres = len(genre_names)
+    k = 4  # Number of clusters
 
     # Cross-validation setup
     kf = KFold(n_splits=5, shuffle=True, random_state=42)
@@ -86,121 +85,175 @@ def main():
     for fold, (train_idx, val_idx) in enumerate(kf.split(X_train)):
         print(f"\n--- Fold {fold + 1} ---")
         
-        # Split data into training and validation sets
+        # Split data
         X_train_fold, X_val_fold = X_train[train_idx], X_train[val_idx]
-        y_train_fold, y_val_fold = y_train_encoded[train_idx], y_train_encoded[val_idx]
+        y_train_fold, y_val_fold = y_train[train_idx], y_train[val_idx]
+        y_train_fold_encoded = y_train_encoded[train_idx]
 
-        # Cluster with K=4
-        k = 4
+        # Cluster with K-means
         kmeans = KMeans(n_clusters=k, random_state=42)
         clusters = kmeans.fit_predict(X_train_fold)
         
         # Create cluster distribution matrix
-        cluster_dist = pd.DataFrame({'Genre': y_train[train_idx], 'Cluster': clusters})
+        cluster_dist = pd.DataFrame({'Genre': y_train_fold, 'Cluster': clusters})
         cluster_dist = cluster_dist.groupby(['Genre', 'Cluster']).size().unstack(fill_value=0)
-        cluster_dist = cluster_dist.div(cluster_dist.sum(axis=1), axis=0)
+        cluster_dist = cluster_dist.div(cluster_dist.sum(axis=1) + 1e-8, axis=0)
         
-        # Create genre-to-cluster mapping
+        # Create mappings
         genre_to_cluster = cluster_dist.values
-        
-        # Create cluster-to-genre mapping (transpose and normalize)
         cluster_to_genre = cluster_dist.T.values
-        cluster_to_genre = cluster_to_genre / cluster_to_genre.sum(axis=1, keepdims=True)
+        cluster_to_genre = cluster_to_genre / (cluster_to_genre.sum(axis=1, keepdims=True) + 1e-8)
         
         # Save label mapping
-        save_label_mapping(label_encoder, cluster_to_genre, rf"D:\research_project\results\unweighted_label_mapping_fold_{fold + 1}.csv")
+        save_label_mapping(label_encoder, cluster_to_genre, rf"D:\research_project\results\weighted_label_mapping_fold_{fold + 1}.csv")
         
-        # Create soft labels for group classification
-        soft_labels_train = np.array([genre_to_cluster[label_encoder.transform([g])[0]] for g in y_train[train_idx]])
-        soft_labels_val = np.array([genre_to_cluster[label_encoder.transform([g])[0]] for g in y_train[val_idx]])
+        # Create soft labels
+        soft_labels_train = np.array([genre_to_cluster[label_encoder.transform([g])[0]] for g in y_train_fold])
 
-        # Train genre classifiers
-        genre_classifiers = []
+        # Train group classifier (original)
+        group_classifier = NoiseAugmentationModel(X_train.shape[1], k)
+        optimizer = optim.Adam(group_classifier.parameters(), lr=0.0005)
         criterion = nn.KLDivLoss(reduction='batchmean')
-
+        
+        for epoch in range(35):
+            group_classifier.train()
+            optimizer.zero_grad()
+            outputs = torch.log_softmax(group_classifier(torch.tensor(X_train_fold, dtype=torch.float32)), dim=1)
+            loss = criterion(outputs, torch.tensor(soft_labels_train, dtype=torch.float32))
+            loss.backward()
+            optimizer.step()
+            print(f"Fold {fold + 1} Group Epoch {epoch+1}, Loss: {loss.item():.4f}")
+        
+        # Train genre classifiers (original)
+        genre_classifiers = []
         for group in range(k):
-            # Get samples for this group
-            group_mask = np.argmax(soft_labels_train, axis=1) == group
-            X_group = X_train_fold[group_mask]
-            y_group = y_train_fold[group_mask]
-            
-            if len(X_group) == 0:
-                print(f"No samples for group {group} in fold {fold + 1}")
-                genre_classifiers.append(None)
-                continue
-                
-            # Create genre classifier
+            # Initialize classifier
             genre_classifier = NoiseAugmentationModel(X_train.shape[1], num_genres)
-            optimizer = optim.Adam(genre_classifier.parameters(), lr=0.0005)
             
-            # Use cluster-to-genre distribution as target
-            y_group_soft = np.array([cluster_to_genre[group] for _ in y_group])
+            # Get weights for current group
+            weights = soft_labels_train[:, group]
             
-            # Training loop
-            for epoch in range(35):
-                genre_classifier.train()
-                optimizer.zero_grad()
-                outputs = torch.log_softmax(genre_classifier(torch.tensor(X_group, dtype=torch.float32)), dim=1)
-                loss = criterion(outputs, torch.tensor(y_group_soft, dtype=torch.float32))
-                loss.backward()
-                optimizer.step()
-                print(f"Fold {fold + 1} Group {group} Epoch {epoch+1}, Loss: {loss.item():.4f}")
+            if np.sum(weights) > 1e-8:
+                optimizer = optim.Adam(genre_classifier.parameters(), lr=0.0005)
+                
+                # Soft targets for this group
+                y_group_soft = np.array([cluster_to_genre[group] for _ in range(len(X_train_fold))])
+                
+                for epoch in range(35):
+                    genre_classifier.train()
+                    optimizer.zero_grad()
+                    outputs = torch.log_softmax(genre_classifier(torch.tensor(X_train_fold, dtype=torch.float32)), dim=1)
+                    loss = nn.KLDivLoss(reduction='none')(outputs, torch.tensor(y_group_soft, dtype=torch.float32))
+                    weighted_loss = (loss * torch.tensor(weights, dtype=torch.float32).unsqueeze(1)).mean()
+                    weighted_loss.backward()
+                    optimizer.step()
+                    print(f"Fold {fold+1} Group {group} Epoch {epoch+1}, Loss: {weighted_loss.item():.4f}")
+            else:
+                print(f"Group {group} has negligible weights - using untrained classifier")
             
             genre_classifiers.append(genre_classifier)
-        
-        # Evaluate on validation set
-        genre_predictions = []
-        
+
+        # Validation with equal-weighted predictions
+        group_classifier.eval()
         with torch.no_grad():
-            # Get genre predictions from all classifiers
+            # Get predictions from all genre classifiers
             genre_outputs = []
-            for i, classifier in enumerate(genre_classifiers):
-                if classifier is None:
-                    # If no classifier for this group, output uniform probabilities
-                    genre_outputs.append(np.ones((len(X_val_fold), num_genres)) / num_genres)
+            for classifier in genre_classifiers:
+                if classifier is not None:
+                    genre_outputs.append(torch.softmax(
+                        classifier(torch.tensor(X_val_fold, dtype=torch.float32)), 
+                        dim=1
+                    ).numpy())
                 else:
-                    genre_outputs.append(torch.softmax(classifier(torch.tensor(X_val_fold, dtype=torch.float32)), dim=1).numpy())
+                    genre_outputs.append(np.ones((len(X_val_fold), num_genres)) / num_genres)
             
-            # Combine predictions without weighting
+            # Equal-weight average of all genre classifiers
             final_predictions = np.mean(genre_outputs, axis=0)
-            
             y_pred = np.argmax(final_predictions, axis=1)
-            y_true = y_val_fold
+            y_true = y_train_encoded[val_idx]
             
-            # Calculate accuracy for this fold
             accuracy = (y_pred == y_true).mean()
             fold_accuracies.append(accuracy)
             print(f"\nFold {fold + 1} Accuracy: {accuracy:.4f}")
     
-    # Calculate average accuracy across folds
-    avg_accuracy = np.mean(fold_accuracies)
-    print(f"\nAverage Cross-Validation Accuracy: {avg_accuracy:.4f}")
+    print(f"\nAverage Cross-Validation Accuracy: {np.mean(fold_accuracies):.4f}")
     
-    # Evaluate on the test set
-    print("\n--- Evaluating on the Test Set ---")
+    # Full training on entire dataset
+    print("\n--- Training on Full Dataset ---")
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    clusters = kmeans.fit_predict(X_train)
 
+    cluster_dist = pd.DataFrame({'Genre': y_train, 'Cluster': clusters})
+    cluster_dist = cluster_dist.groupby(['Genre', 'Cluster']).size().unstack(fill_value=0)
+    cluster_dist = cluster_dist.div(cluster_dist.sum(axis=1) + 1e-8, axis=0)
+
+    genre_to_cluster = cluster_dist.values
+    cluster_to_genre = cluster_dist.T.values
+    cluster_to_genre = cluster_to_genre / (cluster_to_genre.sum(axis=1, keepdims=True) + 1e-8)
+
+    soft_labels_train = np.array([genre_to_cluster[label_encoder.transform([g])[0]] for g in y_train])
+
+    # Train group classifier (original)
+    group_classifier = NoiseAugmentationModel(X_train.shape[1], k)
+    optimizer = optim.Adam(group_classifier.parameters(), lr=0.0005)
+    criterion = nn.KLDivLoss(reduction='batchmean')
+
+    for epoch in range(35):
+        group_classifier.train()
+        optimizer.zero_grad()
+        outputs = torch.log_softmax(group_classifier(torch.tensor(X_train, dtype=torch.float32)), dim=1)
+        loss = criterion(outputs, torch.tensor(soft_labels_train, dtype=torch.float32))
+        loss.backward()
+        optimizer.step()
+        print(f"Full Data Group Epoch {epoch+1}, Loss: {loss.item():.4f}")
+
+    # Train genre classifiers (original)
+    genre_classifiers = []
+    for group in range(k):
+        genre_classifier = NoiseAugmentationModel(X_train.shape[1], num_genres)
+        weights = soft_labels_train[:, group]
+        
+        if np.sum(weights) > 1e-8:
+            optimizer = optim.Adam(genre_classifier.parameters(), lr=0.0005)
+            y_group_soft = np.array([cluster_to_genre[group] for _ in range(len(X_train))])
+            
+            for epoch in range(35):
+                genre_classifier.train()
+                optimizer.zero_grad()
+                outputs = torch.log_softmax(genre_classifier(torch.tensor(X_train, dtype=torch.float32)), dim=1)
+                loss = nn.KLDivLoss(reduction='none')(outputs, torch.tensor(y_group_soft, dtype=torch.float32))
+                weighted_loss = (loss * torch.tensor(weights, dtype=torch.float32).unsqueeze(1)).mean()
+                weighted_loss.backward()
+                optimizer.step()
+                print(f"Full Data Group {group} Epoch {epoch+1}, Loss: {weighted_loss.item():.4f}")
+        else:
+            print(f"Group {group} has negligible weights - using untrained classifier")
+        
+        genre_classifiers.append(genre_classifier)
+
+    # Test evaluation with equal-weighted predictions
+    print("\n--- Testing ---")
+    group_classifier.eval()
     with torch.no_grad():
-        # Get genre predictions from all classifiers
+        # Get predictions from all genre classifiers
         genre_outputs = []
-        for i, classifier in enumerate(genre_classifiers):
-            if classifier is None:
-                genre_outputs.append(np.ones((len(X_test), num_genres)) / num_genres)
+        for classifier in genre_classifiers:
+            if classifier is not None:
+                genre_outputs.append(torch.softmax(
+                    classifier(torch.tensor(X_test, dtype=torch.float32)), 
+                    dim=1
+                ).numpy())
             else:
-                genre_outputs.append(torch.softmax(classifier(torch.tensor(X_test, dtype=torch.float32)), dim=1).numpy())
+                genre_outputs.append(np.ones((len(X_test), num_genres)) / num_genres)
         
-        # Combine predictions without weighting
+        # Equal-weight average of all genre classifiers
         final_predictions = np.mean(genre_outputs, axis=0)
-        
         y_pred = np.argmax(final_predictions, axis=1)
-        y_true = y_test_encoded
-        
-        # Calculate test accuracy
-        test_accuracy = (y_pred == y_true).mean()
+        test_accuracy = (y_pred == y_test_encoded).mean()
         print(f"\nTest Accuracy: {test_accuracy:.4f}")
-        
-        # Save confusion matrix
-        plot_and_save_confusion_matrix(y_true, y_pred, genre_names, 
-                                       r"D:\research_project\results\unweighted_test_confusion_matrix.png")
+
+        plot_and_save_confusion_matrix(y_test_encoded, y_pred, genre_names,
+                                     r"D:\research_project\results\test_confusion_matrix.png")
 
 if __name__ == "__main__":
     main()
