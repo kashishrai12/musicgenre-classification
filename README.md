@@ -199,15 +199,6 @@ This project focuses on classifying music genres based on audio features extract
 
 **Results for K=4:**  
 
-| Level  | Group | Accuracy |
-|--------|-------|----------|
-| Group  | All   | 0.84    |
-| Genre  | 0     | 0.95  |
-| Genre  | 1     | 1.0     |
-| Genre  | 2     | 1.0     |
-| Genre  | 3     | 0.72     |
-
-
 ***Genre to Group Mapping (Hard Mapping):***  
 
     {0: 3, 1: 2, 2: 0, 3: 3, 4: 3, 5: 1, 6: 0, 7: 0, 8: 3, 9: 3}  
@@ -251,16 +242,6 @@ This project focuses on classifying music genres based on audio features extract
 
 
 **Results for K=5:**  
-
-| Level  | Group | Accuracy |
-|--------|-------|----------|
-| Group  | All   | 0.75    |
-| Genre  | 0     | 0.95  |
-| Genre  | 1     | 1.0     |
-| Genre  | 2     | 0.84     |
-| Genre  | 3     | 0.95     |
-| Genre  | 4     | 1.0     |
-
 
 ***Genre to Group Mapping (Hard Mapping):***  
 
