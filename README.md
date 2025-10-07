@@ -5,13 +5,13 @@ This project focuses on classifying music genres based on audio features extract
 
 ---
 
-## Dataset Information  
+# Dataset Information  
 
-### 1. GTZAN Dataset  
+## 1. GTZAN Dataset  
 - Contains **GTZAN audio files**.  
 - Used for training and evaluating genre classification models.  
 
-### 2. FMA-Small Dataset  
+## 2. FMA-Small Dataset  
 - Includes a **subset** of the **FMA (Free Music Archive) dataset**.  
 - Contains:  
   - Audio files  
